@@ -30,6 +30,72 @@ player = Player(world.starting_room)
 traversal_path = []
 
 
+# Reverse direction when no other path is available
+def get_reverse_direction(direction):
+    if direction == 'n':
+        return 's'
+    elif direction == 's':
+        return 'n'
+    elif direction == 'e':
+        return 'w'
+    elif direction == 'w':
+        return 'e'
+
+
+# Create a traversal path to explore all rooms
+def generate_traversal_path(graph):
+
+    # List for generated path
+    generated_path = []
+
+    # List for backtracking
+    backtrack = []
+
+    # Keep track of visited rooms
+    visited = {}
+
+    # Keep track of unexplored rooms
+    unexplored = {}
+
+    # Loops through while there are unexplored rooms
+    while len(visited) < len(room_graph):
+
+        # Initial starting point for visited and unexplored
+        if len(visited) == 0:
+            current_room = player.current_room.id
+            current_exits = player.current_room.get_exits()
+            visited[current_room] = current_exits
+            unexplored[current_room] = current_exits
+
+        # Check if current room was visited
+        if player.current_room.id not in visited:
+            # If not, add current room to visited and unexplored
+            visited[player.current_room.id] = player.current_room.get_exits()
+            unexplored[player.current_room.id] = player.current_room.get_exits()
+
+        # If there's no more directions for current room, then backtrack
+        while len(unexplored[player.current_room.id]) < 1:
+            reverse_direction = backtrack.pop()
+            generated_path.append(reverse_direction)
+            player.travel(reverse_direction)
+
+        # Get direction to move in
+        move = unexplored[player.current_room.id].pop()
+
+        # Add direction to generated path
+        generated_path.append(move)
+
+        # Add reverse direction to backtrack list
+        backtrack.append(get_reverse_direction(move))
+
+        # Move player to the room to update current room
+        player.travel(move)
+
+    # return list of directions
+    return generated_path
+
+# Update traversal path list
+traversal_path.extend(generate_traversal_path(room_graph))
 
 # TRAVERSAL TEST - DO NOT MODIFY
 visited_rooms = set()
